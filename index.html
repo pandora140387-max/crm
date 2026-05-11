@@ -1000,7 +1000,7 @@ function openModal(id){
   setTimeout(()=>document.getElementById('f-name').focus(),80);
 }
 function closeModal(){document.getElementById('overlay').classList.remove('open');editId=null;}
-function saveClient(){
+async function saveClient(){
   const name=document.getElementById('f-name').value.trim();
   const phone=getFullPhone(document.getElementById('f-phone'));
   const status=document.getElementById('f-status').value;
