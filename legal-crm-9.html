@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ЮрCRM</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+[data-theme="light"]{--bg:#F7F6F2;--surface:#FFF;--surface2:#F1EFE8;--surface3:#E8E6DF;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);--text:#1A1A18;--text2:#6B6A65;--text3:#A8A79F;--shadow:0 4px 24px rgba(0,0,0,0.08);}
+[data-theme="dark"]{--bg:#141414;--surface:#1E1E1E;--surface2:#262626;--surface3:#2E2E2E;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#E8E6E0;--text2:#9E9C96;--text3:#5A5955;--shadow:0 4px 24px rgba(0,0,0,0.4);}
+:root{--accent:#3C3489;--accent-bg:#EEEDFE;--accent-mid:#7F77DD;--accent-light:#C5C2F6;--success:#0F6E56;--danger:#A32D2D;--danger-bg:#FCEBEB;--r:10px;--rl:14px;
+  --row-green:#edf8f2;--row-green-h:#dff2ea;--row-red:#fdf2f2;--row-red-h:#fae6e6;--row-yellow:#fdfaf0;--row-yellow-h:#faf3d6;
+  --row-blue:#EBF4FB;--row-blue-h:#daedf8;
+}
+[data-theme="dark"] .badge-success{background:#1a3d2b;color:#5ecba1;}
+[data-theme="dark"] .badge-danger{background:#3d1a1a;color:#f08080;}
+[data-theme="dark"] .badge-warning{background:#3d2e0a;color:#f0c060;}
+[data-theme="dark"] tbody tr.row-green{background:#1a2e24;}[data-theme="dark"] tbody tr.row-green:hover{background:#1e3629;}
+[data-theme="dark"] tbody tr.row-red{background:#2e1a1a;}[data-theme="dark"] tbody tr.row-red:hover{background:#361e1e;}
+[data-theme="dark"] tbody tr.row-yellow{background:#2e2a14;}[data-theme="dark"] tbody tr.row-yellow:hover{background:#36321a;}
+[data-theme="dark"] tbody tr.row-blue{background:#152030;}[data-theme="dark"] tbody tr.row-blue:hover{background:#1a2838;}
+[data-theme="dark"] .contract-block{background:var(--surface2);}
+[data-theme="dark"] .file-item{background:var(--surface3);}
+[data-theme="dark"] .nav-item.active{background:rgba(127,119,221,0.15);color:var(--accent-light);}
+[data-theme="dark"] .metric-val.purple{color:var(--accent-light);}
+[data-theme="dark"] .td-name{color:var(--accent-light);}
+
+body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;transition:background .2s,color .2s;}
+
+/* LAYOUT */
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:226px;background:var(--surface);border-right:.5px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 0;position:fixed;top:0;left:0;bottom:0;z-index:10;transition:background .2s;}
+.logo{display:flex;align-items:center;gap:10px;padding:0 1.25rem 1.25rem;border-bottom:.5px solid var(--border);margin-bottom:1rem;}
+.logo-icon{width:34px;height:34px;background:var(--accent-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-icon svg{width:18px;height:18px;}
+.logo-text{font-size:15px;font-weight:600;color:var(--text);}
+.logo-sub{font-size:11px;color:var(--text3);}
+.nav{padding:0 .75rem;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:13.5px;transition:background .12s,color .12s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;}
+.nav-item svg{width:17px;height:17px;flex-shrink:0;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:500;}
+.sidebar-footer{padding:1rem 1.25rem 0;border-top:.5px solid var(--border);}
+.sidebar-footer .stat{font-size:12px;color:var(--text3);margin-bottom:4px;}
+.sidebar-footer .stat span{color:var(--text2);font-weight:500;}
+.sidebar-user{padding:.75rem 1rem;margin:0 .5rem .25rem;border-radius:var(--r);background:var(--surface2);display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .12s;}
+.sidebar-user:hover{background:var(--surface3);}
+.user-info{flex:1;min-width:0;}
+.user-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-role{font-size:11px;color:var(--text3);}
+.main{margin-left:226px;flex:1;}
+.topbar{background:var(--surface);border-bottom:.5px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;transition:background .2s;}
+.page-title{font-size:17px;font-weight:600;}
+.page-sub{font-size:12px;color:var(--text3);margin-top:1px;}
+.topbar-right{display:flex;gap:10px;align-items:center;}
+.btn-add{display:flex;align-items:center;gap:7px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .12s;}
+.btn-add:hover{opacity:.88;}
+.btn-add svg{width:16px;height:16px;}
+.btn-sec{display:flex;align-items:center;gap:7px;background:none;border:.5px solid var(--border2);border-radius:var(--r);padding:8px 14px;font-size:13px;color:var(--text2);cursor:pointer;transition:background .12s,color .12s;}
+.btn-sec:hover{background:var(--surface2);color:var(--text);}
+.btn-sec svg{width:15px;height:15px;}
+.content{padding:2rem;}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:1.5rem;}
+@media(max-width:1100px){.metrics{grid-template-columns:repeat(2,1fr);}}
+
+/* DASHBOARD DATE FILTER */
+.dash-filter-bar{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:1.5rem;display:flex;flex-direction:column;gap:14px;}
+.dash-filter-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.dash-filter-dates{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.dash-filter-dates input[type=date]{background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--r);padding:8px 12px;font-size:13px;color:var(--text);outline:none;font-family:inherit;cursor:pointer;transition:border-color .12s;min-width:140px;}
+.dash-filter-dates input[type=date]:focus{border-color:var(--accent-mid);}
+.dash-reset-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:.5px solid var(--border2);border-radius:var(--r);padding:7px 13px;font-size:12px;color:var(--text2);cursor:pointer;transition:background .12s,color .12s;white-space:nowrap;}
+.dash-reset-btn:hover{background:var(--danger-bg);color:var(--danger);border-color:var(--danger);}
+.dash-reset-btn svg{width:12px;height:12px;}
+.dash-period-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.period-btn{background:none;border:.5px solid var(--border2);border-radius:99px;padding:6px 14px;font-size:13px;color:var(--text2);cursor:pointer;transition:background .12s,color .12s,border-color .12s;white-space:nowrap;}
+.period-btn:hover{background:var(--surface2);color:var(--text);}
+.period-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:500;}
+.dash-period-label{font-size:12px;color:var(--accent);font-weight:500;min-height:16px;white-space:nowrap;}
+.metric-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:16px 18px;transition:background .2s;}
+.metric-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.metric-icon svg{width:15px;height:15px;}
+.metric-label{font-size:12px;color:var(--text2);margin-bottom:3px;}
+.metric-val{font-size:24px;font-weight:600;color:var(--text);letter-spacing:-.5px;}
+.metric-val.green{color:var(--success);}
+.metric-val.purple{color:var(--accent);}
+
+/* TABLE */
+.filter-bar{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.filter-bar input[type=text],.filter-bar select{background:var(--surface);border:.5px solid var(--border2);border-radius:var(--r);padding:8px 13px;font-size:13px;color:var(--text);outline:none;transition:border-color .12s;}
+.filter-bar input[type=text]{min-width:200px;flex:1;}
+.filter-bar input[type=text]:focus,.filter-bar select:focus{border-color:var(--accent-mid);}
+.filter-bar select{cursor:pointer;}
+.legend{display:flex;gap:14px;align-items:center;margin-bottom:1rem;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);}
+.legend-dot{width:11px;height:11px;border-radius:3px;border:1px solid rgba(0,0,0,.1);}
+.table-wrap{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);overflow:auto;transition:background .2s;}
+table{width:100%;border-collapse:collapse;min-width:900px;}
+thead{background:var(--surface2);}
+th{text-align:left;padding:10px 11px;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;border-bottom:.5px solid var(--border);white-space:nowrap;}
+td{padding:9px 11px;border-bottom:.5px solid var(--border);color:var(--text);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{transition:background .12s;}
+tbody tr.row-green{background:var(--row-green);}tbody tr.row-green:hover{background:var(--row-green-h);}
+tbody tr.row-red{background:var(--row-red);}tbody tr.row-red:hover{background:var(--row-red-h);}
+tbody tr.row-yellow{background:var(--row-yellow);}tbody tr.row-yellow:hover{background:var(--row-yellow-h);}
+tbody tr.row-blue{background:var(--row-blue);}tbody tr.row-blue:hover{background:var(--row-blue-h);}
+tbody tr.row-none:hover{background:var(--surface2);}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:500;white-space:nowrap;}
+.badge-success{background:#c3ecd7;color:#085a42;}
+.badge-danger{background:#fac8c8;color:#831c1c;}
+.badge-warning{background:#fde4a8;color:#553005;}
+.badge-neutral{background:var(--surface2);color:var(--text2);}
+.td-name{font-weight:500;white-space:nowrap;cursor:pointer;color:var(--accent);}
+.td-name:hover{text-decoration:underline;}
+.td-muted{color:var(--text2);}
+.td-sum{font-weight:600;color:var(--success);white-space:nowrap;}
+.td-comment{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);}
+.date-cell input[type=date]{border:.5px solid var(--border2);border-radius:6px;padding:4px 7px;font-size:12px;color:var(--text);background:rgba(128,128,128,.07);outline:none;cursor:pointer;width:118px;font-family:inherit;}
+.action-btn{background:none;border:none;cursor:pointer;padding:5px 7px;border-radius:6px;color:var(--text3);transition:background .1s,color .1s;}
+.action-btn:hover{background:var(--surface2);color:var(--text);}
+.action-btn.del:hover{background:var(--danger-bg);color:var(--danger);}
+.action-btn svg{width:15px;height:15px;display:block;}
+.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text3);}
+.empty-state svg{width:30px;height:30px;margin:0 auto 10px;display:block;opacity:.35;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--rl);border:.5px solid var(--border);padding:2rem;width:480px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.modal-title{font-size:16px;font-weight:600;}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:6px;}
+.modal-close:hover{background:var(--surface2);color:var(--text);}
+.modal-close svg{width:18px;height:18px;display:block;}
+.form-section{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin:1.1rem 0 .7rem;padding-bottom:6px;border-bottom:.5px solid var(--border);}
+.form-row{margin-bottom:.85rem;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;margin-bottom:5px;display:block;}
+.form-row input,.form-row select,.form-row textarea{width:100%;background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--r);padding:9px 13px;font-size:14px;color:var(--text);outline:none;font-family:inherit;transition:border-color .12s;}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent-mid);}
+.form-row textarea{height:65px;resize:vertical;}
+.form-row select{cursor:pointer;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:1.5rem;}
+.btn-cancel{background:none;border:.5px solid var(--border2);border-radius:var(--r);padding:9px 20px;font-size:13px;cursor:pointer;color:var(--text);transition:background .12s;}
+.btn-cancel:hover{background:var(--surface2);}
+.btn-save{background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:9px 22px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:7px;transition:opacity .12s;}
+.btn-save:hover{opacity:.88;}
+.btn-save svg{width:15px;height:15px;}
+.phone-wrap{position:relative;}
+.phone-prefix{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text);pointer-events:none;}
+.phone-wrap input{padding-left:36px!important;}
+.callback-date-row{display:none;}
+.callback-date-row.visible{display:block;}
+
+/* PROFILE PAGE */
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text2);font-size:13px;padding:6px 10px 6px 4px;border-radius:var(--r);transition:background .12s,color .12s;}
+.back-btn:hover{background:var(--surface2);color:var(--text);}
+.back-btn svg{width:16px;height:16px;}
+.profile-grid{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;}
+.profile-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:1.5rem;margin-bottom:14px;transition:background .2s;}
+.profile-card:last-child{margin-bottom:0;}
+.psec-title{font-size:13px;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:8px;color:var(--text);}
+.psec-title svg{width:15px;height:15px;color:var(--accent);}
+[data-theme="dark"] .psec-title svg{color:var(--accent-light);}
+.field-row{display:flex;flex-direction:column;margin-bottom:.9rem;}
+.field-row:last-child{margin-bottom:0;}
+.field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:5px;}
+.field-input{width:100%;background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--r);padding:9px 13px;font-size:14px;color:var(--text);outline:none;font-family:inherit;transition:border-color .12s,background .2s;}
+.field-input:focus{border-color:var(--accent-mid);}
+.field-input[type=date]{cursor:pointer;}
+select.field-input{cursor:pointer;}
+textarea.field-input{resize:vertical;min-height:70px;}
+.autosave-note{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;margin-top:6px;}
+.autosave-dot{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;}
+
+/* contracts */
+.contract-block{background:var(--bg);border:.5px solid var(--border2);border-radius:var(--rl);padding:1.25rem;margin-bottom:12px;transition:background .2s;}
+.contract-block-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.contract-block-num{font-size:13px;font-weight:600;color:var(--text);}
+.btn-del-contract{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:6px;}
+.btn-del-contract:hover{color:var(--danger);background:var(--danger-bg);}
+.btn-del-contract svg{width:15px;height:15px;display:block;}
+.btn-add-item{display:inline-flex;align-items:center;gap:6px;background:none;border:.5px dashed var(--border2);border-radius:var(--r);padding:7px 14px;font-size:13px;color:var(--text2);cursor:pointer;transition:background .12s,color .12s,border-color .12s;margin-top:8px;}
+.btn-add-item:hover{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-mid);}
+.btn-add-item svg{width:14px;height:14px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+/* hearings */
+.hearing-list{display:flex;flex-direction:column;gap:8px;}
+.hearing-item{display:flex;align-items:center;gap:8px;}
+.hearing-num{font-size:12px;color:var(--text3);font-weight:500;width:72px;flex-shrink:0;}
+.hearing-item input[type=date]{flex:1;background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--r);padding:8px 12px;font-size:13px;color:var(--text);outline:none;font-family:inherit;cursor:pointer;}
+.hearing-item input[type=date]:focus{border-color:var(--accent-mid);}
+.del-item-btn{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:6px;flex-shrink:0;}
+.del-item-btn:hover{color:var(--danger);background:var(--danger-bg);}
+.del-item-btn svg{width:14px;height:14px;display:block;}
+
+/* files */
+.file-drop{border:1.5px dashed var(--border2);border-radius:var(--rl);padding:1.25rem;text-align:center;cursor:pointer;transition:border-color .12s,background .12s;position:relative;}
+.file-drop:hover,.file-drop.drag{border-color:var(--accent-mid);background:var(--accent-bg);}
+.file-drop svg{width:26px;height:26px;color:var(--text3);margin:0 auto 8px;display:block;}
+.file-drop p{font-size:13px;color:var(--text2);}
+.file-drop span{font-size:11px;color:var(--text3);}
+.file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.file-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:8px 10px;}
+.file-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;font-weight:700;color:#fff;}
+.file-info{flex:1;min-width:0;}
+.file-name{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-size{font-size:11px;color:var(--text3);}
+.file-actions{display:flex;gap:2px;flex-shrink:0;}
+.file-action-btn{background:none;border:none;cursor:pointer;padding:5px;border-radius:5px;color:var(--text3);transition:background .1s,color .1s;}
+.file-action-btn:hover{background:var(--surface3);color:var(--text);}
+.file-action-btn.del:hover{color:var(--danger);background:var(--danger-bg);}
+.file-action-btn svg{width:14px;height:14px;display:block;}
+
+/* summary card */
+.info-item{display:flex;flex-direction:column;margin-bottom:11px;}
+.info-item:last-child{margin-bottom:0;}
+.info-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:2px;}
+.info-val{font-size:14px;color:var(--text);word-break:break-word;}
+
+/* file preview */
+.preview-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;}
+.preview-overlay.open{display:flex;}
+.preview-box{background:var(--surface);border-radius:var(--rl);overflow:hidden;max-width:92vw;max-height:90vh;display:flex;flex-direction:column;min-width:320px;}
+.preview-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--border);flex-shrink:0;gap:12px;}
+.preview-filename{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--text);}
+.preview-close{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:6px;}
+.preview-close:hover{background:var(--surface2);}
+.preview-close svg{width:18px;height:18px;display:block;}
+.preview-content{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;background:var(--bg);min-height:200px;}
+.preview-content img{max-width:82vw;max-height:78vh;object-fit:contain;display:block;}
+.preview-unsupported{text-align:center;color:var(--text2);padding:2.5rem;}
+.preview-unsupported svg{width:40px;height:40px;margin:0 auto 12px;display:block;opacity:.3;}
+
+/* account */
+.acc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;}
+.acc-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:1.5rem;margin-bottom:14px;}
+.acc-title{font-size:14px;font-weight:600;margin-bottom:1.25rem;color:var(--text);}
+.avatar-upload{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:1.5rem;}
+.avatar-big{width:80px;height:80px;border-radius:50%;overflow:hidden;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;color:var(--accent);cursor:pointer;border:.5px solid var(--border2);}
+.avatar-big img{width:100%;height:100%;object-fit:cover;}
+.theme-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.theme-btn{padding:10px 8px;border:.5px solid var(--border2);border-radius:var(--r);background:var(--surface2);cursor:pointer;font-size:12px;color:var(--text2);transition:background .12s,border-color .12s,color .12s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.theme-btn svg{width:18px;height:18px;}
+.theme-btn:hover,.theme-btn.active{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);font-weight:500;}
+[data-theme="dark"] .theme-btn.active{background:rgba(127,119,221,.15);border-color:var(--accent-light);color:var(--accent-light);}
+
+/* admin */
+.users-grid{display:flex;flex-direction:column;gap:10px;}
+.user-row-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:14px 18px;display:flex;align-items:center;gap:14px;}
+.user-row-info{flex:1;min-width:0;}
+.user-row-name{font-size:14px;font-weight:500;color:var(--text);}
+.user-row-meta{font-size:12px;color:var(--text3);}
+.badge-blocked{background:#3d1a1a;color:#f08080;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:500;}
+.badge-admin{background:var(--accent-bg);color:var(--accent);padding:3px 10px;border-radius:99px;font-size:12px;font-weight:500;}
+[data-theme="dark"] .badge-admin{background:rgba(127,119,221,.15);color:var(--accent-light);}
+
+/* lawyer stats */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.section-title{font-size:15px;font-weight:600;}
+.lawyer-table-wrap{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:1.5rem;}
+.lawyer-table-wrap table{min-width:500px;}
+
+/* autosave indicator */
+.autosave-indicator{position:fixed;bottom:20px;right:24px;background:var(--success);color:#fff;font-size:12px;padding:6px 14px;border-radius:99px;opacity:0;transition:opacity .3s;z-index:100;pointer-events:none;}
+.autosave-indicator.show{opacity:1;}
+
+/* password */
+#pw-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;transition:background .2s;}
+#pw-screen.hidden{display:none;}
+.pw-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:2.5rem 2rem;width:360px;text-align:center;box-shadow:var(--shadow);}
+.pw-logo{width:48px;height:48px;background:var(--accent-bg);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;}
+.pw-logo svg{width:24px;height:24px;}
+.pw-title{font-size:17px;font-weight:600;margin-bottom:4px;color:var(--text);}
+.pw-sub{font-size:13px;color:var(--text2);margin-bottom:1.5rem;}
+.pw-input{width:100%;background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--r);padding:10px 14px;font-size:14px;color:var(--text);outline:none;font-family:inherit;transition:border-color .12s;margin-bottom:8px;text-align:left;}
+.pw-input:focus{border-color:var(--accent-mid);}
+.pw-input.error{border-color:#c0392b;animation:shake .3s ease;}
+.pw-input.center{text-align:center;letter-spacing:.1em;}
+.pw-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:11px;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .12s;}
+.pw-btn:hover{opacity:.88;}
+.pw-error{font-size:12px;color:#c0392b;margin-top:8px;min-height:16px;}
+.pw-hint{font-size:11px;color:var(--text3);margin-top:1.25rem;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+@media(max-width:900px){.sidebar{display:none;}.main{margin-left:0;}.metrics{grid-template-columns:repeat(2,1fr);}.content{padding:1rem;}.profile-grid,.acc-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- AUTOSAVE INDICATOR -->
+<div class="autosave-indicator" id="autosave-indicator">✓ Автосохранение</div>
+
+<!-- PASSWORD SCREEN -->
+<div id="pw-screen">
+  <div class="pw-card" id="pw-card-login">
+    <div class="pw-logo"><svg viewBox="0 0 20 20" fill="none" stroke="#3C3489" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="10" height="8" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/></svg></div>
+    <div class="pw-title">ЮрCRM</div>
+    <div class="pw-sub">Введите логин и пароль</div>
+    <input class="pw-input" type="text" id="pw-login" placeholder="Логин" autocomplete="username">
+    <input class="pw-input pw-input center" type="password" id="pw-pass" placeholder="Пароль" autocomplete="current-password">
+    <button class="pw-btn" onclick="checkPassword()">Войти</button>
+    <div class="pw-error" id="pw-error"></div>
+    <div class="pw-hint">Доступ предоставляется администратором</div>
+  </div>
+  <div class="pw-card" id="pw-card-change" style="display:none;">
+    <div class="pw-logo"><svg viewBox="0 0 20 20" fill="none" stroke="#3C3489" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="10" height="8" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/></svg></div>
+    <div class="pw-title">Смените пароль</div>
+    <div class="pw-sub">Установите новый пароль для входа</div>
+    <input class="pw-input pw-input center" type="password" id="pw-new1" placeholder="Новый пароль">
+    <input class="pw-input pw-input center" type="password" id="pw-new2" placeholder="Повторите пароль">
+    <button class="pw-btn" onclick="doChangePassword()">Сохранить и войти</button>
+    <div class="pw-error" id="pw-change-error"></div>
+  </div>
+</div>
+
+<!-- FILE PREVIEW -->
+<div class="preview-overlay" id="preview-overlay">
+  <div class="preview-box">
+    <div class="preview-header">
+      <div class="preview-filename" id="preview-filename"></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+        <button class="btn-sec" id="preview-dl-btn" style="padding:6px 12px;font-size:12px;"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M4 15h12"/></svg>Скачать</button>
+        <button class="preview-close" onclick="closePreview()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+      </div>
+    </div>
+    <div class="preview-content" id="preview-content"></div>
+  </div>
+</div>
+
+<div class="layout" id="app-layout" style="display:none;">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 20 20" fill="none" stroke="#3C3489" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="3"/><path d="M7 10h6M7 7h4M7 13h3"/></svg></div>
+      <div><div class="logo-text">ЮрCRM</div><div class="logo-sub">Система учёта</div></div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item" id="nav-dash" onclick="showPage('dashboard')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></svg>Дашборд</button>
+      <button class="nav-item" id="nav-clients" onclick="showPage('clients')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><path d="M2 17c0-3.314 2.686-6 6-6h0c3.314 0 6 2.686 6 6"/><path d="M15 7h3M15 10h2"/></svg>Клиенты</button>
+      <button class="nav-item" id="nav-admin" onclick="showPage('admin')" style="display:none;"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.314 2.686-6 6-6s6 2.686 6 6"/><circle cx="16" cy="5" r="2" fill="currentColor" stroke="none"/></svg>Пользователи</button>
+      <button class="nav-item" id="nav-account" onclick="showPage('account')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>Мой профиль</button>
+    </nav>
+    <div class="sidebar-footer" id="sidebar-stats"></div>
+    <div style="padding:.5rem .5rem 0;">
+      <div class="sidebar-user" onclick="showPage('account')">
+        <div id="sidebar-avatar" style="flex-shrink:0;"></div>
+        <div class="user-info"><div class="user-name" id="sidebar-uname">—</div><div class="user-role" id="sidebar-urole">—</div></div>
+      </div>
+      <button style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text3);padding:6px 12px;border-radius:6px;display:flex;align-items:center;gap:5px;width:100%;margin-top:2px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='none'" onclick="logout()">
+        <svg style="width:13px;height:13px;" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 15l4-5-4-5M17 10H8"/><path d="M8 3H5a2 2 0 00-2 2v10a2 2 0 002 2h3"/></svg>Выйти
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" style="display:none;">
+      <div class="topbar">
+        <div><div class="page-title">Дашборд</div><div class="page-sub" id="dash-date"></div></div>
+        <div class="topbar-right"><button class="btn-add" onclick="openModal()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>Добавить заявку</button></div>
+      </div>
+      <div class="content">
+        <!-- DATE FILTER -->
+        <div class="dash-filter-bar">
+          <div class="dash-filter-top">
+            <div class="dash-filter-dates">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 3v2M13 3v2"/></svg>
+              <span style="font-size:13px;color:var(--text2);white-space:nowrap;">с</span>
+              <input type="date" id="dash-date-from" onchange="applyCustomPeriod()">
+              <span style="font-size:13px;color:var(--text2);white-space:nowrap;">по</span>
+              <input type="date" id="dash-date-to" onchange="applyCustomPeriod()">
+              <button class="dash-reset-btn" onclick="clearCustomPeriod()" title="Сбросить фильтр">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l10 10M15 5L5 15"/></svg>
+                Сбросить
+              </button>
+            </div>
+            <div class="dash-period-label" id="dash-period-label"></div>
+          </div>
+          <div class="dash-period-btns">
+            <button class="period-btn active" data-period="all" onclick="setPeriod('all',this)">Всё время</button>
+            <button class="period-btn" data-period="today" onclick="setPeriod('today',this)">Сегодня</button>
+            <button class="period-btn" data-period="week" onclick="setPeriod('week',this)">Неделя</button>
+            <button class="period-btn" data-period="month" onclick="setPeriod('month',this)">Месяц</button>
+            <button class="period-btn" data-period="quarter" onclick="setPeriod('quarter',this)">Квартал</button>
+            <button class="period-btn" data-period="year" onclick="setPeriod('year',this)">Год</button>
+          </div>
+        </div>
+
+        <div class="metrics" id="metrics"></div>
+        <div class="section-header"><div class="section-title">Аналитика по юристам</div></div>
+        <div class="lawyer-table-wrap"><table><thead><tr><th>Юрист</th><th>Клиентов</th><th>Договоров</th><th>Конверсия</th><th>Заседаний</th><th>Выручка</th><th>Доплаты</th></tr></thead><tbody id="lawyer-body"></tbody></table></div>
+        <div class="section-header"><div class="section-title" id="recent-title">Заявки за период</div><button class="btn-sec" onclick="showPage('clients')">Все →</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Дата</th><th>ФИО</th><th>Телефон</th><th>Юрист</th><th>Результат</th><th>Сумма</th><th>Комментарий</th></tr></thead><tbody id="recent-body"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div id="page-clients" style="display:none;">
+      <div class="topbar">
+        <div><div class="page-title">Клиенты</div><div class="page-sub" id="clients-count-label"></div></div>
+        <div class="topbar-right">
+          <button class="btn-sec" onclick="exportExcel()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 7l6 6M13 7l-6 6"/></svg>Excel</button>
+          <button class="btn-sec" onclick="exportCSV()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M4 15h12v2H4z"/></svg>CSV</button>
+          <button class="btn-add" onclick="openModal()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>Добавить</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="filter-bar">
+          <input type="text" id="search" placeholder="Поиск по имени или телефону..." oninput="renderClients()">
+          <select id="filter-status" onchange="renderClients()"><option value="">Все результаты</option><option value="перезвон">Перезвон</option><option value="отказ">Отказ</option><option value="договор">Договор</option></select>
+          <select id="filter-lawyer" onchange="renderClients()"><option value="">Все юристы</option></select>
+          <select id="filter-source" onchange="renderClients()"><option value="">Все источники</option><option value="Авито">Авито</option><option value="Звонок">Звонок</option><option value="Улица">Улица</option><option value="Рекомендация">Рекомендация</option><option value="Другое">Другое</option></select>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--row-green);"></div>Договор</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--row-red);"></div>Отказ</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--row-yellow);"></div>Перезвон</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--row-blue);border-color:rgba(0,100,200,.15);"></div>Завершено</div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Дата</th><th>ФИО</th><th>Телефон</th><th>Юрист</th><th>Источник</th><th>Результат</th><th>Перезвон</th><th>Сумма договоров</th><th>Предоплата</th><th>Доплата</th><th>Дата доплаты</th><th>Комментарий</th><th></th></tr></thead>
+          <tbody id="clients-body"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- CLIENT PROFILE -->
+    <div id="page-profile" style="display:none;">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="back-btn" onclick="showPage('clients')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4L7 10l6 6"/></svg>Назад</button>
+          <div><div class="page-title" id="profile-title">Клиент</div><div class="page-sub" id="profile-sub"></div></div>
+        </div>
+        <div class="topbar-right" style="font-size:12px;color:var(--text3);">Изменения сохраняются автоматически</div>
+      </div>
+      <div class="content">
+        <div class="profile-grid">
+          <div>
+            <!-- CONTRACTS -->
+            <div class="profile-card">
+              <div class="psec-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><path d="M7 7h6M7 10h6M7 13h4"/></svg>Договоры</div>
+              <div id="contracts-list"></div>
+              <button class="btn-add-item" onclick="addContract()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>Добавить договор</button>
+            </div>
+            <!-- HEARINGS -->
+            <div class="profile-card">
+              <div class="psec-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 3v2M13 3v2"/></svg>Заседания</div>
+              <div class="hearing-list" id="hearing-list"></div>
+              <button class="btn-add-item" onclick="addHearing()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>Добавить заседание</button>
+            </div>
+            <!-- FILES -->
+            <div class="profile-card">
+              <div class="psec-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h8l4 4v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z"/><path d="M12 4v4h4"/></svg>Файлы и документы</div>
+              <div class="file-drop" id="file-drop">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 7l4-4 4 4"/><path d="M4 15h12v2H4z"/></svg>
+                <p>Нажмите или перетащите файлы сюда</p><span>Word, Excel, PDF, фото · макс. 10 МБ</span>
+                <input type="file" id="file-input" multiple accept=".doc,.docx,.xls,.xlsx,.csv,.pdf,.png,.jpg,.jpeg,.gif,.webp,.bmp" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" onchange="handleFiles(this.files)">
+              </div>
+              <div class="file-list" id="file-list"></div>
+            </div>
+          </div>
+          <!-- SUMMARY -->
+          <div>
+            <div class="profile-card">
+              <div class="psec-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>Карточка клиента</div>
+              <div id="profile-summary"></div>
+            </div>
+            <!-- CASE STATUS -->
+            <div class="profile-card">
+              <div class="psec-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 3"/></svg>Статус дела</div>
+              <div class="field-row">
+                <label class="field-label">Общий статус</label>
+                <select class="field-input" id="p-overall-status" onchange="autosaveProfile()">
+                  <option value="">— не задан —</option>
+                  <option value="В работе">В работе</option>
+                  <option value="На паузе">На паузе</option>
+                  <option value="Завершено">Завершено</option>
+                </select>
+              </div>
+              <div class="field-row">
+                <label class="field-label">Ответственный юрист</label>
+                <select class="field-input" id="p-lawyer" onchange="autosaveProfile()"></select>
+              </div>
+              <div class="field-row">
+                <label class="field-label">Представитель в суде</label>
+                <select class="field-input" id="p-representative" onchange="autosaveProfile()"></select>
+              </div>
+              <div class="field-row">
+                <label class="field-label">Комментарий</label>
+                <textarea class="field-input" id="p-comment" placeholder="Дополнительные заметки..." oninput="debouncedAutosave()"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div id="page-account" style="display:none;">
+      <div class="topbar"><div><div class="page-title">Мой профиль</div></div></div>
+      <div class="content">
+        <div class="acc-grid">
+          <div>
+            <div class="acc-card">
+              <div class="acc-title">Фото и имя</div>
+              <div class="avatar-upload">
+                <div class="avatar-big" id="acc-avatar-preview" onclick="document.getElementById('acc-avatar-input').click()"></div>
+                <div style="font-size:12px;color:var(--text3);">Нажмите для загрузки фото</div>
+                <input type="file" id="acc-avatar-input" accept="image/*" style="display:none;" onchange="handleAvatarUpload(this.files)">
+              </div>
+              <div class="form-row"><label class="form-label">Отображаемое имя</label><input type="text" id="acc-display-name" placeholder="Иванов И.И."></div>
+              <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+                <button class="btn-save" onclick="saveAccountInfo()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l5 5 7-7"/></svg>Сохранить</button>
+              </div>
+              <div id="acc-name-msg" style="font-size:12px;margin-top:8px;min-height:16px;text-align:right;"></div>
+            </div>
+            <div class="acc-card">
+              <div class="acc-title">Смена пароля</div>
+              <div class="form-row"><label class="form-label">Текущий пароль</label><input type="password" id="acc-pw-old"></div>
+              <div class="form-row"><label class="form-label">Новый пароль</label><input type="password" id="acc-pw-new1"></div>
+              <div class="form-row"><label class="form-label">Повторите новый</label><input type="password" id="acc-pw-new2"></div>
+              <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+                <button class="btn-save" onclick="changeOwnPassword()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l5 5 7-7"/></svg>Сменить пароль</button>
+              </div>
+              <div id="acc-pw-msg" style="font-size:12px;margin-top:8px;min-height:16px;text-align:right;"></div>
+            </div>
+          </div>
+          <div class="acc-card">
+            <div class="acc-title">Тема оформления</div>
+            <div class="theme-options">
+              <button class="theme-btn" id="theme-btn-light" onclick="setTheme('light')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/></svg>Светлая</button>
+              <button class="theme-btn" id="theme-btn-dark" onclick="setTheme('dark')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 13A7 7 0 016 3a7 7 0 1011 10z"/></svg>Тёмная</button>
+              <button class="theme-btn" id="theme-btn-system" onclick="setTheme('system')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="16" height="11" rx="2"/><path d="M7 18h6M10 15v3"/></svg>Системная</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="page-admin" style="display:none;">
+      <div class="topbar">
+        <div><div class="page-title">Пользователи</div></div>
+        <div class="topbar-right"><button class="btn-add" onclick="openAddUser()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>Добавить</button></div>
+      </div>
+      <div class="content"><div class="users-grid" id="users-list"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- ADD/EDIT CLIENT MODAL (simplified — no finance here) -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Новая заявка</div>
+      <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    </div>
+    <div class="form-section">Контакт</div>
+    <div class="form-row"><label class="form-label">ФИО *</label><input type="text" id="f-name" placeholder="Иванов Иван Иванович"></div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">Телефон *</label><div class="phone-wrap"><span class="phone-prefix">+7</span><input type="tel" id="f-phone" placeholder="999 000 00 00" maxlength="15" inputmode="numeric"></div></div>
+      <div class="form-row"><label class="form-label">Email</label><input type="email" id="f-email" placeholder="client@mail.ru"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">Источник</label><select id="f-source"><option value="Авито">Авито</option><option value="Звонок">Звонок</option><option value="Улица">Улица</option><option value="Рекомендация">Рекомендация</option><option value="Другое">Другое</option></select></div>
+      <div class="form-row"><label class="form-label">Ответственный юрист</label><select id="f-lawyer"></select></div>
+    </div>
+    <div class="form-section">Результат</div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">Результат *</label><select id="f-status" onchange="toggleCbDate()"><option value="">— выберите —</option><option value="перезвон">Перезвон</option><option value="отказ">Отказ</option><option value="договор">Договор</option></select></div>
+      <div class="form-row callback-date-row" id="callback-date-row"><label class="form-label">Дата перезвона</label><input type="date" id="f-callback-date"></div>
+    </div>
+    <div class="form-section">Комментарий</div>
+    <div class="form-row"><textarea id="f-comment" placeholder="Суть вопроса..."></textarea></div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal()">Отмена</button>
+      <button class="btn-save" onclick="saveClient()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l5 5 7-7"/></svg>Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT USER MODAL -->
+<div class="overlay" id="overlay-user">
+  <div class="modal" style="width:420px;">
+    <div class="modal-head">
+      <div class="modal-title" id="user-modal-title">Новый пользователь</div>
+      <button class="modal-close" onclick="closeUserModal()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    </div>
+    <div class="form-row"><label class="form-label">Логин *</label><input type="text" id="u-login" placeholder="ivanov" autocomplete="off"></div>
+    <div class="form-row"><label class="form-label">Отображаемое имя *</label><input type="text" id="u-name" placeholder="Иванов И.И."></div>
+    <div class="form-row" id="u-pass-row"><label class="form-label">Пароль *</label><input type="password" id="u-pass" autocomplete="new-password"></div>
+    <div class="form-row"><label class="form-label">Роль</label><select id="u-role"><option value="user">Пользователь</option><option value="admin">Администратор</option></select></div>
+    <div class="form-row" id="u-newpass-row" style="display:none;"><label class="form-label">Новый пароль (пусто = не менять)</label><input type="password" id="u-newpass" autocomplete="new-password"></div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeUserModal()">Отмена</button>
+      <button class="btn-save" onclick="saveUser()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l5 5 7-7"/></svg>Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ══ SUPABASE ══════════════════════════════════════════════════════════════════
+const SUPA_URL = 'https://kjmyxzxonzlmfgorugrr.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqbXl4enhvbnpsbWZnb3J1Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0OTk5MzYsImV4cCI6MjA5NDA3NTkzNn0.cXDIEisg1JXJh0wOHfE_r4Js4AsxOjGbP5LGLYZIJms';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ══ DATA ══════════════════════════════════════════════════════════════════════
+let clients=[], profiles={}, usersDB={users:[]}, currentUser=null;
+let editId=null, currentPage='dashboard', profileId=null, editUserId=null;
+let autosaveTimer=null;
+
+// Show loading overlay
+function showLoading(msg='Загрузка...'){
+  let el=document.getElementById('loading-overlay');
+  if(!el){
+    el=document.createElement('div');
+    el.id='loading-overlay';
+    el.style.cssText='position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:12px;';
+    el.innerHTML=`<div style="width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div><div style="font-size:14px;color:var(--text2);" id="loading-msg">${msg}</div>`;
+    if(!document.getElementById('spin-style')){const s=document.createElement('style');s.id='spin-style';s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);}
+    document.body.appendChild(el);
+  }
+  document.getElementById('loading-msg').textContent=msg;
+}
+function hideLoading(){const el=document.getElementById('loading-overlay');if(el)el.remove();}
+
+// ── LOAD ALL DATA FROM SUPABASE ───────────────────────────────────────────────
+async function loadData(){
+  showLoading('Загрузка данных...');
+  try {
+    // Load clients
+    const {data:cData,error:cErr}=await sb.from('clients').select('*').order('date',{ascending:false});
+    if(cErr) throw cErr;
+    clients=(cData||[]).map(r=>({
+      id:r.id, date:r.date, name:r.name, phone:r.phone, email:r.email||'',
+      source:r.source||'', lawyerId:r.lawyer_id||'', status:r.status||'',
+      callbackDate:r.callback_date||'', comment:r.comment||''
+    }));
+
+    // Load profiles
+    const {data:pData,error:pErr}=await sb.from('profiles').select('*');
+    if(pErr) throw pErr;
+    profiles={};
+    (pData||[]).forEach(r=>{profiles[r.id]=r.data||{};});
+
+    // Load users
+    const {data:uData,error:uErr}=await sb.from('crm_users').select('*');
+    if(uErr) throw uErr;
+    if(uData&&uData.length>0){
+      usersDB={users:uData.map(r=>({
+        id:r.id, login:r.login, name:r.name, pass:r.pass, role:r.role||'user',
+        blocked:r.blocked||false, mustChange:r.must_change!==false,
+        avatar:r.avatar||'', theme:r.theme||'system'
+      }))};
+    } else {
+      // First run — create default users
+      const defaults=[
+        {id:'admin',login:'admin',name:'Администратор',pass:'admin2024',role:'admin',blocked:false,must_change:false,avatar:'',theme:'system'},
+        {id:'u1',login:'yurist1',name:'Юрист 1',pass:'yurist1',role:'user',blocked:false,must_change:true,avatar:'',theme:'system'},
+        {id:'u2',login:'yurist2',name:'Юрист 2',pass:'yurist2',role:'user',blocked:false,must_change:true,avatar:'',theme:'system'},
+      ];
+      await sb.from('crm_users').insert(defaults);
+      usersDB={users:defaults.map(r=>({id:r.id,login:r.login,name:r.name,pass:r.pass,role:r.role,blocked:r.blocked,mustChange:r.must_change,avatar:r.avatar,theme:r.theme}))};
+    }
+  } catch(e){
+    console.error('Ошибка загрузки:',e);
+    alert('Ошибка подключения к базе данных: '+e.message);
+  }
+  hideLoading();
+}
+
+// ── SAVE CLIENTS ──────────────────────────────────────────────────────────────
+async function saveClient_db(c){
+  const row={id:c.id,date:c.date,name:c.name,phone:c.phone,email:c.email||'',
+    source:c.source||'',lawyer_id:c.lawyerId||'',status:c.status||'',
+    callback_date:c.callbackDate||'',comment:c.comment||''};
+  const {error}=await sb.from('clients').upsert(row);
+  if(error){console.error(error);alert('Ошибка сохранения клиента: '+error.message);}
+}
+async function deleteClient_db(id){
+  await sb.from('clients').delete().eq('id',id);
+  await sb.from('profiles').delete().eq('id',id);
+}
+
+// ── SAVE PROFILES ─────────────────────────────────────────────────────────────
+async function saveProfile_db(id){
+  const {error}=await sb.from('profiles').upsert({id,data:profiles[id],updated_at:new Date().toISOString()});
+  if(error) console.error('Ошибка сохранения профиля:',error);
+}
+
+// ── SAVE USERS ────────────────────────────────────────────────────────────────
+async function saveUser_db(u){
+  const row={id:u.id,login:u.login,name:u.name,pass:u.pass,role:u.role,
+    blocked:u.blocked,must_change:u.mustChange,avatar:u.avatar||'',theme:u.theme||'system'};
+  const {error}=await sb.from('crm_users').upsert(row);
+  if(error) console.error('Ошибка сохранения пользователя:',error);
+}
+async function deleteUser_db(id){
+  await sb.from('crm_users').delete().eq('id',id);
+}
+
+// Legacy wrappers (called throughout the code)
+function saveData(){/* handled by saveClient_db */}
+function saveProfiles(){/* handled by saveProfile_db */}
+function saveUsers(){/* handled by saveUser_db — called manually where needed */}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function getUser(id){return usersDB.users.find(u=>u.id===id);}
+function getUserByLogin(l){return usersDB.users.find(u=>u.login===l);}
+function getUserName(id){const u=getUser(id);return u?u.name:id?id:'—';}
+
+// ══ AUTOSAVE INDICATOR ════════════════════════════════════════════════════════
+function showAutosaveIndicator(){
+  const el=document.getElementById('autosave-indicator');
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),1800);
+}
+function debouncedAutosave(){
+  clearTimeout(autosaveTimer);
+  autosaveTimer=setTimeout(autosaveProfile,600);
+}
+
+// ══ THEME ═════════════════════════════════════════════════════════════════════
+function applyTheme(t){
+  const resolved=t==='system'?(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):t;
+  document.documentElement.setAttribute('data-theme',resolved);
+  ['light','dark','system'].forEach(n=>{document.getElementById('theme-btn-'+n)?.classList.toggle('active',n===t);});
+}
+function setTheme(t){if(currentUser){currentUser.theme=t;saveUser_db(currentUser);}applyTheme(t);}
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(currentUser?.theme==='system')applyTheme('system');});
+
+// ══ HELPERS ═══════════════════════════════════════════════════════════════════
+function fmt(ts){if(!ts)return'—';return new Date(ts).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'});}
+function fmtDate(s){if(!s)return'—';const[y,m,d]=s.split('-');return`${d}.${m}.${y.slice(2)}`;}
+function fmtSum(n){if(!n||+n===0)return'—';return(+n).toLocaleString('ru-RU')+' ₽';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function badge(s){const m={договор:['badge-success','Договор'],отказ:['badge-danger','Отказ'],перезвон:['badge-warning','Перезвон']};const[cls,lbl]=m[s]||['badge-neutral',s||'—'];return`<span class="badge ${cls}">${lbl}</span>`;}
+
+function rowCls(c){
+  const p=profiles[c.id];
+  if(p?.overallStatus==='Завершено') return'row-blue';
+  return c.status==='договор'?'row-green':c.status==='отказ'?'row-red':c.status==='перезвон'?'row-yellow':'row-none';
+}
+
+// compute aggregated finance from contracts in profile
+function getClientFinance(cid){
+  const p=profiles[cid];
+  if(!p||!p.contracts||!p.contracts.length) return{total:0,prepay:0,extra:0,firstExtraDate:''};
+  let total=0,prepay=0,extra=0,firstExtraDate='';
+  p.contracts.forEach(ct=>{
+    total+=(+ct.total||0);prepay+=(+ct.prepay||0);extra+=(+ct.extra||0);
+    if(!firstExtraDate&&ct.extraDate) firstExtraDate=ct.extraDate;
+  });
+  return{total,prepay,extra,firstExtraDate};
+}
+
+function avatarHtml(user,size=32){
+  const init=(user.name||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+  if(user.avatar) return`<img src="${user.avatar}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;display:block;">`;
+  return`<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*.38)}px;font-weight:600;color:var(--accent);">${init}</div>`;
+}
+function updateSidebarUser(){
+  if(!currentUser)return;
+  document.getElementById('sidebar-avatar').innerHTML=avatarHtml(currentUser,32);
+  document.getElementById('sidebar-uname').textContent=currentUser.name;
+  document.getElementById('sidebar-urole').textContent=currentUser.role==='admin'?'Администратор':'Пользователь';
+}
+
+// ══ PHONE MASK ════════════════════════════════════════════════════════════════
+function applyPhoneMask(input){
+  input.addEventListener('paste',e=>{e.preventDefault();const raw=(e.clipboardData||window.clipboardData).getData('text');const d=raw.replace(/\D/g,'');let ten;if(d.length===11&&(d[0]==='7'||d[0]==='8'))ten=d.slice(1);else if(d.length===10)ten=d;else ten=d.slice(-10);input.value=fmtTen(ten);});
+  input.addEventListener('input',()=>{input.value=fmtTen(input.value.replace(/\D/g,'').slice(0,10));});
+}
+function fmtTen(d){let r='';if(d.length>0)r+=d.slice(0,3);if(d.length>3)r+=' '+d.slice(3,6);if(d.length>6)r+=' '+d.slice(6,8);if(d.length>8)r+=' '+d.slice(8,10);return r;}
+function getFullPhone(input){const d=input.value.replace(/\D/g,'');return d?'+7'+d:'';}
+function setPhoneInput(input,stored){if(!stored){input.value='';return;}const d=stored.replace(/\D/g,'');input.value=fmtTen(d.length>=10?d.slice(-10):d);}
+
+// ══ NAVIGATION ════════════════════════════════════════════════════════════════
+function showPage(p,id){
+  currentPage=p;
+  ['dashboard','clients','profile','account','admin'].forEach(n=>{const el=document.getElementById('page-'+n);if(el)el.style.display=(n===p?'':'none');});
+  ['dash','clients','admin','account'].forEach(n=>{const el=document.getElementById('nav-'+n);if(el)el.classList.toggle('active',(n==='dash'&&p==='dashboard')||(n==='clients'&&(p==='clients'||p==='profile'))||(n===p));});
+  if(p==='dashboard')renderDashboard();
+  if(p==='clients'){populateLawyerFilter();renderClients();}
+  if(p==='profile'&&id)openProfile(id);
+  if(p==='account')renderAccountPage();
+  if(p==='admin')renderAdminPage();
+}
+
+// ══ DASHBOARD ═════════════════════════════════════════════════════════════════
+let dashDateFrom=null, dashDateTo=null, dashPeriod='all';
+
+function setPeriod(period, btn){
+  dashPeriod=period;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const now=new Date(); now.setHours(23,59,59,999);
+  const from=new Date();
+  if(period==='all'){dashDateFrom=null;dashDateTo=null;document.getElementById('dash-date-from').value='';document.getElementById('dash-date-to').value='';}
+  else if(period==='today'){from.setHours(0,0,0,0);dashDateFrom=from;dashDateTo=new Date(now);}
+  else if(period==='week'){from.setDate(from.getDate()-6);from.setHours(0,0,0,0);dashDateFrom=from;dashDateTo=new Date(now);}
+  else if(period==='month'){from.setDate(1);from.setHours(0,0,0,0);dashDateFrom=from;dashDateTo=new Date(now);}
+  else if(period==='quarter'){const m=now.getMonth();from.setMonth(m-m%3,1);from.setHours(0,0,0,0);dashDateFrom=from;dashDateTo=new Date(now);}
+  else if(period==='year'){from.setMonth(0,1);from.setHours(0,0,0,0);dashDateFrom=from;dashDateTo=new Date(now);}
+  // sync date inputs
+  if(dashDateFrom) document.getElementById('dash-date-from').value=dashDateFrom.toISOString().slice(0,10);
+  if(dashDateTo) document.getElementById('dash-date-to').value=dashDateTo.toISOString().slice(0,10);
+  if(period==='all'){document.getElementById('dash-date-from').value='';document.getElementById('dash-date-to').value='';}
+  renderDashboard();
+}
+
+function applyCustomPeriod(){
+  const from=document.getElementById('dash-date-from').value;
+  const to=document.getElementById('dash-date-to').value;
+  dashDateFrom=from?new Date(from+'T00:00:00'):null;
+  dashDateTo=to?new Date(to+'T23:59:59'):null;
+  dashPeriod='custom';
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  renderDashboard();
+}
+
+function clearCustomPeriod(){
+  document.getElementById('dash-date-from').value='';
+  document.getElementById('dash-date-to').value='';
+  dashDateFrom=null;dashDateTo=null;dashPeriod='all';
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.toggle('active',b.dataset.period==='all'));
+  renderDashboard();
+}
+
+function filterByDate(list){
+  if(!dashDateFrom&&!dashDateTo) return list;
+  return list.filter(c=>{
+    const d=new Date(c.date);
+    if(dashDateFrom&&d<dashDateFrom) return false;
+    if(dashDateTo&&d>dashDateTo) return false;
+    return true;
+  });
+}
+
+function periodLabelText(){
+  if(!dashDateFrom&&!dashDateTo) return'';
+  const opts={day:'2-digit',month:'2-digit',year:'numeric'};
+  const f=dashDateFrom?dashDateFrom.toLocaleDateString('ru-RU',opts):'начало';
+  const t=dashDateTo?dashDateTo.toLocaleDateString('ru-RU',opts):'сегодня';
+  return`${f} — ${t}`;
+}
+
+function renderDashboard(){
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('dash-period-label').textContent=periodLabelText();
+
+  const filtered=filterByDate(clients);
+  const total=filtered.length;
+  const contr=filtered.filter(c=>c.status==='договор');
+  const rev=contr.reduce((a,c)=>a+getClientFinance(c.id).total,0);
+  const extras=contr.reduce((a,c)=>a+getClientFinance(c.id).extra,0);
+  const conv=total>0?Math.round(contr.length/total*100):0;
+  const myC=filtered.filter(c=>(profiles[c.id]?.lawyerId||c.lawyerId)===currentUser?.id);
+  const refusals=filtered.filter(c=>c.status==='отказ').length;
+
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric-card">
+      <div class="metric-icon" style="background:#E6F1FB"><svg viewBox="0 0 20 20" fill="none" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 7v3l2 2"/></svg></div>
+      <div class="metric-label">Заявок за период</div><div class="metric-val">${total}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon" style="background:#EAF3DE"><svg viewBox="0 0 20 20" fill="none" stroke="#0F6E56" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l5 5 7-7"/></svg></div>
+      <div class="metric-label">Договоров</div><div class="metric-val green">${contr.length}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon" style="background:#EEEDFE"><svg viewBox="0 0 20 20" fill="none" stroke="#3C3489" stroke-width="1.5" stroke-linecap="round"><path d="M4 16c0-4 2-6 6-6s6 2 6 6"/><circle cx="10" cy="7" r="3"/></svg></div>
+      <div class="metric-label">Конверсия</div><div class="metric-val purple">${conv}%</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon" style="background:#EAF3DE"><svg viewBox="0 0 20 20" fill="none" stroke="#0F6E56" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="14" height="10" rx="2"/><path d="M7 6V4h6v2"/></svg></div>
+      <div class="metric-label">Выручка (сумма договоров)</div>
+      <div class="metric-val green" style="font-size:${rev>=1000000?16:22}px">${rev.toLocaleString('ru-RU')} ₽</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon" style="background:#FFF3E0"><svg viewBox="0 0 20 20" fill="none" stroke="#E65100" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 7v3h3"/></svg></div>
+      <div class="metric-label">Сумма доплат</div>
+      <div class="metric-val" style="color:#E65100;font-size:${extras>=1000000?16:22}px">${extras.toLocaleString('ru-RU')} ₽</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon" style="background:#FCE8E8"><svg viewBox="0 0 20 20" fill="none" stroke="#A32D2D" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 7v3M10 14h.01"/></svg></div>
+      <div class="metric-label">Мои клиенты / Отказов</div>
+      <div class="metric-val" style="font-size:22px">${myC.length} <span style="font-size:14px;color:var(--danger);font-weight:400;">/ ${refusals}</span></div>
+    </div>`;
+
+  // lawyer stats
+  document.getElementById('lawyer-body').innerHTML=usersDB.users.map(u=>{
+    const uc=filtered.filter(c=>(profiles[c.id]?.lawyerId||c.lawyerId)===u.id);
+    const ucontr=uc.filter(c=>c.status==='договор');
+    const urev=ucontr.reduce((a,c)=>a+getClientFinance(c.id).total,0);
+    const uextra=ucontr.reduce((a,c)=>a+getClientFinance(c.id).extra,0);
+    const conv2=uc.length>0?Math.round(ucontr.length/uc.length*100):0;
+    const hearings=uc.reduce((a,c)=>a+((profiles[c.id]?.hearings||[]).filter(h=>h).length),0);
+    return`<tr class="row-none">
+      <td>${esc(u.name)}${u.blocked?` <span class="badge-blocked" style="font-size:10px;">блок.</span>`:''}</td>
+      <td>${uc.length}</td><td>${ucontr.length}</td><td>${conv2}%</td><td>${hearings}</td>
+      <td class="${urev?'td-sum':'td-muted'}">${fmtSum(urev)}</td>
+      <td class="${uextra?'td-sum':'td-muted'}">${fmtSum(uextra)}</td>
+    </tr>`;
+  }).join('');
+
+  // recent list
+  const recent=[...filtered].sort((a,b)=>b.date-a.date).slice(0,50);
+  const periodActive=dashDateFrom||dashDateTo;
+  document.getElementById('recent-title').textContent=periodActive?`Заявки за период (${recent.length})`:`Последние заявки`;
+  document.getElementById('recent-body').innerHTML=!recent.length
+    ?`<tr><td colspan="7"><div class="empty-state"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="3" width="12" height="14" rx="2"/><path d="M7 7h6M7 10h4"/></svg>Нет заявок за выбранный период</div></td></tr>`
+    :recent.map(c=>{const f=getClientFinance(c.id);return`<tr class="${rowCls(c)}"><td class="td-muted" style="white-space:nowrap">${fmt(c.date)}</td><td class="td-name" onclick="showPage('profile','${c.id}')">${esc(c.name)}</td><td class="td-muted">${esc(c.phone)}</td><td class="td-muted">${esc(getUserName((profiles[c.id]?.lawyerId)||c.lawyerId))}</td><td>${badge(c.status)}</td><td class="${f.total?'td-sum':'td-muted'}">${fmtSum(f.total)}</td><td class="td-comment">${esc(c.comment||'—')}</td></tr>`;}).join('');
+
+  updateSidebarStats();
+}
+
+// ══ CLIENTS TABLE ══════════════════════════════════════════════════════════════
+function populateLawyerFilter(){
+  const sel=document.getElementById('filter-lawyer');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Все юристы</option>'+usersDB.users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('');
+  sel.value=cur;
+}
+function renderClients(){
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  const fs=document.getElementById('filter-status')?.value||'';
+  const fl=document.getElementById('filter-lawyer')?.value||'';
+  const fsrc=document.getElementById('filter-source')?.value||'';
+  let list=[...clients].sort((a,b)=>b.date-a.date);
+  if(q)list=list.filter(c=>c.name.toLowerCase().includes(q)||c.phone.includes(q));
+  if(fs)list=list.filter(c=>c.status===fs);
+  if(fl)list=list.filter(c=>(profiles[c.id]?.lawyerId||c.lawyerId)===fl);
+  if(fsrc)list=list.filter(c=>c.source===fsrc);
+  document.getElementById('clients-count-label').textContent=`${list.length} из ${clients.length} записей`;
+  const tbody=document.getElementById('clients-body');
+  tbody.innerHTML=!list.length
+    ?`<tr><td colspan="13"><div class="empty-state"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="3" width="12" height="14" rx="2"/><path d="M7 7h6M7 10h4"/></svg>Нет записей</div></td></tr>`
+    :list.map(c=>{
+      const f=getClientFinance(c.id);
+      const p=profiles[c.id];
+      const lawyerName=getUserName(p?.lawyerId||c.lawyerId);
+      return`<tr class="${rowCls(c)}">
+        <td class="td-muted" style="white-space:nowrap">${fmt(c.date)}</td>
+        <td class="td-name" onclick="showPage('profile','${c.id}')">${esc(c.name)}</td>
+        <td class="td-muted" style="white-space:nowrap">${esc(c.phone)}</td>
+        <td class="td-muted">${esc(lawyerName)}</td>
+        <td class="td-muted">${esc(c.source||'—')}</td>
+        <td>${badge(c.status)}</td>
+        <td class="date-cell"><input type="date" value="${esc(c.callbackDate||'')}" onchange="updateClientField('${c.id}','callbackDate',this.value)"></td>
+        <td class="${f.total?'td-sum':'td-muted'}">${fmtSum(f.total)}</td>
+        <td class="${f.prepay?'td-sum':'td-muted'}">${fmtSum(f.prepay)}</td>
+        <td class="${f.extra?'td-sum':'td-muted'}">${fmtSum(f.extra)}</td>
+        <td class="td-muted" style="white-space:nowrap">${f.firstExtraDate?fmtDate(f.firstExtraDate):'—'}</td>
+        <td class="td-comment" title="${esc(c.comment||'')}">${esc(c.comment||'—')}</td>
+        <td style="white-space:nowrap">
+          <button class="action-btn" onclick="openModal('${c.id}')" title="Редактировать"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4l3 3-9 9H4v-3l9-9z"/></svg></button>
+          <button class="action-btn del" onclick="deleteClient('${c.id}')" title="Удалить"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h12M8 7V5h4v2M9 11v4M11 11v4M5 7l1 9h8l1-9"/></svg></button>
+        </td>
+      </tr>`;}).join('');
+  updateSidebarStats();
+}
+function updateClientField(id,field,value){
+  const i=clients.findIndex(x=>x.id===id);if(i===-1)return;
+  clients[i][field]=value;saveClient_db(clients[i]);
+}
+function updateSidebarStats(){
+  const t=clients.length,c=clients.filter(x=>x.status==='договор').length,p=clients.filter(x=>x.status==='перезвон').length;
+  document.getElementById('sidebar-stats').innerHTML=`<div class="stat">Всего: <span>${t}</span></div><div class="stat">Договоров: <span>${c}</span></div><div class="stat">Перезвон: <span>${p}</span></div>`;
+}
+
+// ══ ADD/EDIT MODAL ════════════════════════════════════════════════════════════
+function toggleCbDate(){const s=document.getElementById('f-status').value;document.getElementById('callback-date-row').classList.toggle('visible',s==='перезвон');}
+function populateLawyerSelect(){
+  const sel=document.getElementById('f-lawyer');
+  sel.innerHTML='<option value="">— не назначен —</option>'+usersDB.users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('');
+}
+function openModal(id){
+  editId=id||null;
+  const c=id?clients.find(x=>x.id===id):null;
+  populateLawyerSelect();
+  document.getElementById('modal-title').textContent=c?'Редактировать запись':'Новая заявка';
+  document.getElementById('f-name').value=c?.name||'';
+  setPhoneInput(document.getElementById('f-phone'),c?.phone||'');
+  document.getElementById('f-email').value=c?.email||'';
+  document.getElementById('f-source').value=c?.source||'Авито';
+  document.getElementById('f-lawyer').value=c?.lawyerId||currentUser?.id||'';
+  document.getElementById('f-status').value=c?.status||'';
+  document.getElementById('f-callback-date').value=c?.callbackDate||'';
+  document.getElementById('f-comment').value=c?.comment||'';
+  toggleCbDate();
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f-name').focus(),80);
+}
+function closeModal(){document.getElementById('overlay').classList.remove('open');editId=null;}
+function saveClient(){
+  const name=document.getElementById('f-name').value.trim();
+  const phone=getFullPhone(document.getElementById('f-phone'));
+  const status=document.getElementById('f-status').value;
+  if(!name){alert('Укажите ФИО');return;}
+  if(!phone){alert('Укажите телефон');return;}
+  if(!status){alert('Выберите результат');return;}
+  const existing=editId?clients.find(x=>x.id===editId):null;
+  const obj={
+    id:editId||uid(),date:existing?.date||Date.now(),
+    name,phone,email:document.getElementById('f-email').value.trim(),
+    source:document.getElementById('f-source').value,
+    lawyerId:document.getElementById('f-lawyer').value,
+    status,callbackDate:document.getElementById('f-callback-date').value,
+    comment:document.getElementById('f-comment').value.trim()
+  };
+  if(editId){const i=clients.findIndex(x=>x.id===editId);clients[i]=obj;}else clients.push(obj);
+  // init profile if new
+  if(!editId&&!profiles[obj.id]){profiles[obj.id]=defaultProfile(obj.lawyerId);}
+  await saveClient_db(obj);
+  if(!editId) await saveProfile_db(obj.id);
+  closeModal();
+  if(currentPage==='dashboard')renderDashboard();else renderClients();
+}
+function deleteClient(id){
+  if(!confirm('Удалить эту запись?'))return;
+  clients=clients.filter(x=>x.id!==id);delete profiles[id];
+  deleteClient_db(id);renderClients();
+}
+
+// ══ CLIENT PROFILE ════════════════════════════════════════════════════════════
+function defaultProfile(lawyerId){return{contracts:[defaultContract()],hearings:[],files:[],overallStatus:'',lawyerId:lawyerId||currentUser?.id||'',representativeId:'',comment:''};}
+function defaultContract(){return{id:uid(),subject:'',type:'',total:0,prepay:0,extra:0,extraDate:'',notes:''};}
+
+function openProfile(id){
+  profileId=id;
+  const c=clients.find(x=>x.id===id);
+  if(!c){showPage('clients');return;}
+  if(!profiles[id]) profiles[id]=defaultProfile(c.lawyerId);
+  const p=profiles[id];
+  if(!p.contracts||!p.contracts.length) p.contracts=[defaultContract()];
+  document.getElementById('profile-title').textContent=c.name;
+  document.getElementById('profile-sub').textContent=c.phone+(c.email?' · '+c.email:'');
+  // fill status card
+  populateUserSelects();
+  document.getElementById('p-overall-status').value=p.overallStatus||'';
+  document.getElementById('p-lawyer').value=p.lawyerId||c.lawyerId||'';
+  document.getElementById('p-representative').value=p.representativeId||'';
+  document.getElementById('p-comment').value=p.comment||'';
+  renderContracts(p.contracts);
+  renderHearings(p.hearings||[]);
+  renderFiles(p.files||[]);
+  renderProfileSummary(c);
+}
+
+function populateUserSelects(){
+  const opts='<option value="">— не выбрано —</option>'+usersDB.users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('');
+  document.getElementById('p-lawyer').innerHTML=opts;
+  document.getElementById('p-representative').innerHTML=opts;
+}
+
+// autosave profile
+function autosaveProfile(){
+  const p=profiles[profileId];if(!p)return;
+  // read status fields
+  p.overallStatus=document.getElementById('p-overall-status').value;
+  p.lawyerId=document.getElementById('p-lawyer').value;
+  p.representativeId=document.getElementById('p-representative').value;
+  p.comment=document.getElementById('p-comment').value;
+  // read contracts
+  p.contracts.forEach(ct=>{
+    const s=v=>`ct-${v}-${ct.id}`;
+    ct.subject=document.getElementById(s('subject'))?.value||ct.subject;
+    ct.type=document.getElementById(s('type'))?.value||ct.type;
+    ct.total=+(document.getElementById(s('total'))?.value||0);
+    ct.prepay=+(document.getElementById(s('prepay'))?.value||0);
+    ct.extra=Math.max(0,ct.total-ct.prepay);
+    const exEl=document.getElementById(s('extra'));if(exEl)exEl.value=ct.extra||'';
+    ct.extraDate=document.getElementById(s('extradate'))?.value||ct.extraDate;
+    ct.notes=document.getElementById(s('notes'))?.value||ct.notes;
+  });
+  saveProfile_db(profileId);
+  // update client lawyer from profile
+  const ci=clients.findIndex(x=>x.id===profileId);
+  if(ci!==-1&&p.lawyerId){clients[ci].lawyerId=p.lawyerId;saveClient_db(clients[ci]);}
+  renderProfileSummary(clients.find(x=>x.id===profileId));
+  showAutosaveIndicator();
+}
+
+// contracts
+function contractHtml(ct,idx){
+  return`<div class="contract-block" id="cb-${ct.id}">
+    <div class="contract-block-header">
+      <div class="contract-block-num">Договор ${idx+1}</div>
+      ${idx>0?`<button class="btn-del-contract" onclick="removeContract('${ct.id}')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h12M8 7V5h4v2M9 11v4M11 11v4M5 7l1 9h8l1-9"/></svg></button>`:''}
+    </div>
+    <div class="field-row"><label class="field-label">Предмет договора</label><textarea class="field-input" id="ct-subject-${ct.id}" placeholder="Опишите предмет..." oninput="debouncedAutosave()">${esc(ct.subject||'')}</textarea></div>
+    <div class="fg2">
+      <div class="field-row"><label class="field-label">Тип договора</label><select class="field-input" id="ct-type-${ct.id}" onchange="autosaveProfile()"><option value="" ${!ct.type?'selected':''}>— не выбрано —</option><option value="Документы" ${ct.type==='Документы'?'selected':''}>Документы</option><option value="Представительство" ${ct.type==='Представительство'?'selected':''}>Представительство</option></select></div>
+      <div class="field-row"><label class="field-label">Статус договора</label><select class="field-input" id="ct-cstatus-${ct.id}" onchange="autosaveProfile()"><option value="" ${!ct.caseStatus?'selected':''}>— не выбрано —</option><option value="В работе" ${ct.caseStatus==='В работе'?'selected':''}>В работе</option><option value="На паузе" ${ct.caseStatus==='На паузе'?'selected':''}>На паузе</option><option value="Завершено" ${ct.caseStatus==='Завершено'?'selected':''}>Завершено</option></select></div>
+    </div>
+    <div class="fg3">
+      <div class="field-row"><label class="field-label">Сумма договора, ₽</label><input type="number" class="field-input" id="ct-total-${ct.id}" value="${ct.total||''}" placeholder="0" min="0" oninput="calcContractExtra('${ct.id}');debouncedAutosave()"></div>
+      <div class="field-row"><label class="field-label">Предоплата, ₽</label><input type="number" class="field-input" id="ct-prepay-${ct.id}" value="${ct.prepay||''}" placeholder="0" min="0" oninput="calcContractExtra('${ct.id}');debouncedAutosave()"></div>
+      <div class="field-row"><label class="field-label">Доплата, ₽</label><input type="number" class="field-input" id="ct-extra-${ct.id}" value="${ct.extra||''}" placeholder="0" readonly style="background:var(--surface3);color:var(--text2);"></div>
+    </div>
+    <div class="fg2">
+      <div class="field-row"><label class="field-label">Дата доплаты</label><input type="date" class="field-input" id="ct-extradate-${ct.id}" value="${esc(ct.extraDate||'')}" onchange="autosaveProfile()"></div>
+      <div></div>
+    </div>
+    <div class="field-row"><label class="field-label">Заметки по договору</label><textarea class="field-input" id="ct-notes-${ct.id}" placeholder="Особенности, позиция клиента..." oninput="debouncedAutosave()">${esc(ct.notes||'')}</textarea></div>
+  </div>`;
+}
+function calcContractExtra(ctId){
+  const t=+(document.getElementById(`ct-total-${ctId}`)?.value||0);
+  const p=+(document.getElementById(`ct-prepay-${ctId}`)?.value||0);
+  const el=document.getElementById(`ct-extra-${ctId}`);
+  if(el) el.value=t>0?Math.max(0,t-p):'';
+}
+function renderContracts(contracts){document.getElementById('contracts-list').innerHTML=contracts.map((ct,i)=>contractHtml(ct,i)).join('');}
+function addContract(){const p=profiles[profileId];if(!p)return;p.contracts.push(defaultContract());renderContracts(p.contracts);document.getElementById('contracts-list').lastElementChild?.scrollIntoView({behavior:'smooth',block:'start'});}
+function removeContract(ctId){
+  const p=profiles[profileId];if(!p)return;
+  if(p.contracts.length<=1){alert('Минимум один договор');return;}
+  if(!confirm('Удалить договор?'))return;
+  p.contracts=p.contracts.filter(x=>x.id!==ctId);
+  renderContracts(p.contracts);autosaveProfile();
+}
+
+// hearings
+const ORDINALS=['1-е','2-е','3-е','4-е','5-е','6-е','7-е','8-е','9-е','10-е'];
+function renderHearings(h){
+  const el=document.getElementById('hearing-list');
+  el.innerHTML=!h.length?'<div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Заседаний пока нет</div>':h.map((d,i)=>`
+    <div class="hearing-item"><span class="hearing-num">${ORDINALS[i]||i+1+'-е'}</span>
+    <input type="date" value="${esc(d||'')}" onchange="updateHearing(${i},this.value)">
+    <button class="del-item-btn" onclick="removeHearing(${i})"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button></div>`).join('');
+}
+function addHearing(){const p=profiles[profileId];if(!p)return;if((p.hearings||[]).length>=10){alert('Макс. 10');return;}(p.hearings=p.hearings||[]).push('');renderHearings(p.hearings);saveProfile_db(profileId);}
+function updateHearing(i,val){const p=profiles[profileId];if(!p)return;p.hearings[i]=val;saveProfile_db(profileId);}
+function removeHearing(i){const p=profiles[profileId];if(!p)return;p.hearings.splice(i,1);renderHearings(p.hearings);saveProfile_db(profileId);}
+
+// files
+function fileColor(n){const e=(n.split('.').pop()||'').toLowerCase();if(['doc','docx'].includes(e))return'#2B579A';if(['xls','xlsx','csv'].includes(e))return'#217346';if(e==='pdf')return'#D32F2F';if(['png','jpg','jpeg','gif','webp','bmp'].includes(e))return'#7B5EA7';return'#607D8B';}
+function fileExt(n){return(n.split('.').pop()||'').toUpperCase().slice(0,4);}
+function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return Math.round(b/1024)+'KB';return(b/1048576).toFixed(1)+'MB';}
+function isImg(n){return['png','jpg','jpeg','gif','webp','bmp'].includes((n.split('.').pop()||'').toLowerCase());}
+function isPDF(n){return(n.split('.').pop()||'').toLowerCase()==='pdf';}
+
+function handleFiles(fileList){
+  const p=profiles[profileId];if(!p)return;
+  Array.from(fileList).forEach(file=>{
+    if(file.size>10*1024*1024){alert(`"${file.name}" больше 10 МБ`);return;}
+    const reader=new FileReader();
+    reader.onload=e=>{(p.files=p.files||[]).push({id:uid(),name:file.name,size:file.size,type:file.type,data:e.target.result});renderFiles(p.files);saveProfile_db(profileId);showAutosaveIndicator();};
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('file-input').value='';
+}
+function renderFiles(files){
+  const list=document.getElementById('file-list');
+  if(!files?.length){list.innerHTML='';return;}
+  list.innerHTML=files.map(f=>`
+    <div class="file-item">
+      <div class="file-icon" style="background:${fileColor(f.name)}">${fileExt(f.name)}</div>
+      <div class="file-info"><div class="file-name" title="${esc(f.name)}">${esc(f.name)}</div><div class="file-size">${fmtSize(f.size)}</div></div>
+      <div class="file-actions">
+        ${(isImg(f.name)||isPDF(f.name))?`<button class="file-action-btn" onclick="previewFile('${f.id}')" title="Просмотр"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M4 10s2-4 6-4 6 4 6 4-2 4-6 4-6-4-6-4z"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/></svg></button>`:''}
+        <button class="file-action-btn" onclick="downloadFile('${f.id}')" title="Скачать"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M4 15h12"/></svg></button>
+        <button class="file-action-btn del" onclick="deleteFile('${f.id}')" title="Удалить"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h12M8 7V5h4v2M9 11v4M11 11v4M5 7l1 9h8l1-9"/></svg></button>
+      </div>
+    </div>`).join('');
+}
+function previewFile(fid){
+  const p=profiles[profileId];if(!p)return;
+  const f=(p.files||[]).find(x=>x.id===fid);if(!f)return;
+  document.getElementById('preview-filename').textContent=f.name;
+  document.getElementById('preview-dl-btn').onclick=()=>downloadFile(fid);
+  const content=document.getElementById('preview-content');
+  content.innerHTML='';
+  if(isImg(f.name)){const img=document.createElement('img');img.src=f.data;img.alt=f.name;content.appendChild(img);}
+  else if(isPDF(f.name)){
+    const b64=f.data.split(',')[1];const bin=atob(b64);const bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    const blob=new Blob([bytes],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const iframe=document.createElement('iframe');iframe.src=url;iframe.style.cssText='width:80vw;height:75vh;border:none;display:block;';
+    content.appendChild(iframe);
+  } else {
+    content.innerHTML=`<div class="preview-unsupported"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h8l4 4v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z"/><path d="M12 4v4h4"/></svg>Просмотр недоступен.<br>Используйте «Скачать».</div>`;
+  }
+  document.getElementById('preview-overlay').classList.add('open');
+}
+function closePreview(){document.getElementById('preview-overlay').classList.remove('open');document.getElementById('preview-content').innerHTML='';}
+function downloadFile(fid){const p=profiles[profileId];if(!p)return;const f=(p.files||[]).find(x=>x.id===fid);if(!f)return;const a=document.createElement('a');a.href=f.data;a.download=f.name;a.click();}
+function deleteFile(fid){const p=profiles[profileId];if(!p)return;if(!confirm('Удалить файл?'))return;p.files=(p.files||[]).filter(x=>x.id!==fid);renderFiles(p.files);saveProfile_db(profileId);showAutosaveIndicator();}
+
+const dropZone=document.getElementById('file-drop');
+['dragenter','dragover'].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.add('drag');}));
+['dragleave','drop'].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.remove('drag');}));
+dropZone.addEventListener('drop',e=>handleFiles(e.dataTransfer.files));
+
+function renderProfileSummary(c){
+  if(!c)return;
+  const p=profiles[c.id]||{};
+  const f=getClientFinance(c.id);
+  const repName=getUserName(p.representativeId);
+  const items=[
+    ['Статус заявки',badge(c.status)],
+    ['Статус дела',esc(p.overallStatus||'—')],
+    ['Юрист',esc(getUserName(p.lawyerId||c.lawyerId))],
+    ['Представитель',esc(repName)],
+    ['Дата заявки',fmt(c.date)],
+    ['Телефон',esc(c.phone)],
+    ['Email',esc(c.email||'—')],
+    ['Источник',esc(c.source||'—')],
+    ['Итог. сумма',fmtSum(f.total)],
+    ['Итог. предоплата',fmtSum(f.prepay)],
+    ['Итог. доплата',fmtSum(f.extra)],
+    ['Перезвон',c.callbackDate?fmtDate(c.callbackDate):'—'],
+  ];
+  document.getElementById('profile-summary').innerHTML=items.map(([l,v])=>`<div class="info-item"><div class="info-lbl">${l}</div><div class="info-val">${v}</div></div>`).join('');
+}
+
+// ══ ACCOUNT ═══════════════════════════════════════════════════════════════════
+function renderAccountPage(){
+  if(!currentUser)return;
+  document.getElementById('acc-avatar-preview').innerHTML=avatarHtml(currentUser,80);
+  document.getElementById('acc-display-name').value=currentUser.name||'';
+  applyTheme(currentUser.theme||'system');
+}
+function handleAvatarUpload(files){
+  const file=files[0];if(!file)return;
+  if(file.size>2*1024*1024){alert('Фото должно быть меньше 2 МБ');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{currentUser.avatar=e.target.result;saveUser_db(currentUser);document.getElementById('acc-avatar-preview').innerHTML=avatarHtml(currentUser,80);updateSidebarUser();};
+  reader.readAsDataURL(file);
+}
+function saveAccountInfo(){
+  const name=document.getElementById('acc-display-name').value.trim();
+  if(!name){alert('Введите имя');return;}
+  currentUser.name=name;saveUser_db(currentUser);updateSidebarUser();
+  const msg=document.getElementById('acc-name-msg');
+  msg.style.color='var(--success)';msg.textContent='✓ Имя сохранено';
+  setTimeout(()=>msg.textContent='',3000);
+}
+function changeOwnPassword(){
+  const old=document.getElementById('acc-pw-old').value;
+  const n1=document.getElementById('acc-pw-new1').value;
+  const n2=document.getElementById('acc-pw-new2').value;
+  const msg=document.getElementById('acc-pw-msg');
+  if(old!==currentUser.pass){msg.style.color='#c0392b';msg.textContent='Неверный текущий пароль';return;}
+  if(n1.length<4){msg.style.color='#c0392b';msg.textContent='Минимум 4 символа';return;}
+  if(n1!==n2){msg.style.color='#c0392b';msg.textContent='Пароли не совпадают';return;}
+  currentUser.pass=n1;currentUser.mustChange=false;saveUser_db(currentUser);
+  ['acc-pw-old','acc-pw-new1','acc-pw-new2'].forEach(id=>document.getElementById(id).value='');
+  msg.style.color='var(--success)';msg.textContent='✓ Пароль изменён';
+  setTimeout(()=>msg.textContent='',3000);
+}
+
+// ══ ADMIN ═════════════════════════════════════════════════════════════════════
+function renderAdminPage(){
+  document.getElementById('users-list').innerHTML=usersDB.users.map(u=>`
+    <div class="user-row-card">
+      <div>${avatarHtml(u,40)}</div>
+      <div class="user-row-info">
+        <div class="user-row-name">${esc(u.name)} ${u.role==='admin'?'<span class="badge-admin">Админ</span>':''} ${u.blocked?'<span class="badge-blocked">Заблокирован</span>':''}</div>
+        <div class="user-row-meta">@${esc(u.login)} · ${u.mustChange?'Смена пароля при входе':'Пароль задан'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn-sec" style="padding:7px 12px;font-size:12px;" onclick="openEditUser('${u.id}')">Изменить</button>
+        ${u.id!==currentUser.id?`<button class="btn-sec" style="padding:7px 12px;font-size:12px;color:${u.blocked?'var(--success)':'var(--danger)'};" onclick="toggleBlock('${u.id}')">${u.blocked?'Разблокировать':'Заблокировать'}</button>`:''}
+        ${u.id!==currentUser.id?`<button class="btn-sec" style="padding:7px 12px;font-size:12px;color:var(--danger);" onclick="deleteUser('${u.id}')">Удалить</button>`:''}
+      </div>
+    </div>`).join('');
+}
+function openAddUser(){
+  editUserId=null;
+  document.getElementById('user-modal-title').textContent='Новый пользователь';
+  document.getElementById('u-login').value='';document.getElementById('u-login').disabled=false;
+  document.getElementById('u-name').value='';document.getElementById('u-pass').value='';
+  document.getElementById('u-role').value='user';
+  document.getElementById('u-pass-row').style.display='block';
+  document.getElementById('u-newpass-row').style.display='none';
+  document.getElementById('overlay-user').classList.add('open');
+  setTimeout(()=>document.getElementById('u-login').focus(),80);
+}
+function openEditUser(id){
+  editUserId=id;const u=getUser(id);if(!u)return;
+  document.getElementById('user-modal-title').textContent='Редактировать пользователя';
+  document.getElementById('u-login').value=u.login;document.getElementById('u-login').disabled=true;
+  document.getElementById('u-name').value=u.name;document.getElementById('u-pass').value='';
+  document.getElementById('u-role').value=u.role;document.getElementById('u-newpass').value='';
+  document.getElementById('u-pass-row').style.display='none';
+  document.getElementById('u-newpass-row').style.display='block';
+  document.getElementById('overlay-user').classList.add('open');
+}
+function closeUserModal(){document.getElementById('overlay-user').classList.remove('open');editUserId=null;}
+function saveUser(){
+  const name=document.getElementById('u-name').value.trim();
+  const role=document.getElementById('u-role').value;
+  if(!editUserId){
+    const login=document.getElementById('u-login').value.trim();
+    const pass=document.getElementById('u-pass').value;
+    if(!login||!name||!pass){alert('Заполните все поля');return;}
+    if(getUserByLogin(login)){alert('Логин уже занят');return;}
+    const nu={id:uid(),login,name,pass,role,blocked:false,mustChange:true,avatar:'',theme:'system'};
+    usersDB.users.push(nu);
+    saveUser_db(nu);
+  } else {
+    const u=getUser(editUserId);if(!u)return;
+    u.name=name;u.role=role;
+    const np=document.getElementById('u-newpass').value;
+    if(np){if(np.length<4){alert('Мин. 4 символа');return;}u.pass=np;u.mustChange=true;}
+    saveUser_db(u);
+  }
+  closeUserModal();renderAdminPage();
+}
+function toggleBlock(id){const u=getUser(id);if(!u)return;u.blocked=!u.blocked;saveUser_db(u);renderAdminPage();}
+function deleteUser(id){if(!confirm('Удалить пользователя?'))return;usersDB.users=usersDB.users.filter(x=>x.id!==id);deleteUser_db(id);renderAdminPage();}
+
+// ══ EXPORT ════════════════════════════════════════════════════════════════════
+function getExportRows(){
+  return[...clients].sort((a,b)=>b.date-a.date).map(c=>{
+    const p=profiles[c.id]||{};const f=getClientFinance(c.id);
+    return[fmt(c.date),c.name,c.phone,c.email||'',getUserName(p.lawyerId||c.lawyerId),getUserName(p.representativeId),c.source||'',c.status,p.overallStatus||'',
+      c.callbackDate?fmtDate(c.callbackDate):'',f.total||0,f.prepay||0,f.extra||0,f.firstExtraDate?fmtDate(f.firstExtraDate):'',c.comment||''];
+  });
+}
+const HDR=['Дата','ФИО','Телефон','Email','Юрист','Представитель','Источник','Результат','Статус дела','Перезвон','Сумма','Предоплата','Доплата','Дата доплаты','Комментарий'];
+function exportCSV(){
+  const csv=[HDR,...getExportRows()].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`crm_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
+function exportExcel(){
+  if(typeof XLSX==='undefined'){alert('Excel ещё загружается, подождите секунду');return;}
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([HDR,...getExportRows()]);
+  ws['!cols']=[{wch:10},{wch:28},{wch:16},{wch:24},{wch:18},{wch:18},{wch:10},{wch:12},{wch:12},{wch:14},{wch:12},{wch:12},{wch:12},{wch:14},{wch:30}];
+  XLSX.utils.book_append_sheet(wb,ws,'Клиенты');
+  XLSX.writeFile(wb,`crm_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ══ AUTH ══════════════════════════════════════════════════════════════════════
+let pendingUser=null;
+function checkPassword(){
+  const login=document.getElementById('pw-login').value.trim();
+  const pass=document.getElementById('pw-pass').value;
+  const err=document.getElementById('pw-error');
+  const u=getUserByLogin(login);
+  if(!u||u.pass!==pass){
+    document.getElementById('pw-pass').classList.add('error');
+    err.textContent='Неверный логин или пароль';
+    document.getElementById('pw-pass').value='';
+    setTimeout(()=>document.getElementById('pw-pass').classList.remove('error'),400);
+    return;
+  }
+  if(u.blocked){err.textContent='Аккаунт заблокирован. Обратитесь к администратору.';return;}
+  if(u.mustChange){pendingUser=u;document.getElementById('pw-card-login').style.display='none';document.getElementById('pw-card-change').style.display='block';return;}
+  loginUser(u);
+}
+function doChangePassword(){
+  const n1=document.getElementById('pw-new1').value,n2=document.getElementById('pw-new2').value;
+  const err=document.getElementById('pw-change-error');
+  if(n1.length<4){err.textContent='Минимум 4 символа';return;}
+  if(n1!==n2){err.textContent='Пароли не совпадают';return;}
+  pendingUser.pass=n1;pendingUser.mustChange=false;
+  saveUser_db(pendingUser);
+  loginUser(pendingUser);pendingUser=null;
+}
+function loginUser(u){
+  currentUser=u;sessionStorage.setItem('yurcm_sid',u.id);
+  document.getElementById('pw-screen').classList.add('hidden');
+  document.getElementById('app-layout').style.display='flex';
+  applyTheme(u.theme||'system');
+  document.getElementById('nav-admin').style.display=u.role==='admin'?'flex':'none';
+  updateSidebarUser();showPage('dashboard');
+}
+function logout(){
+  sessionStorage.removeItem('yurcm_sid');currentUser=null;
+  document.getElementById('pw-screen').classList.remove('hidden');
+  document.getElementById('app-layout').style.display='none';
+  document.getElementById('pw-card-login').style.display='block';
+  document.getElementById('pw-card-change').style.display='none';
+  document.getElementById('pw-login').value='';document.getElementById('pw-pass').value='';
+  document.getElementById('pw-error').textContent='';
+}
+
+// ══ INIT ══════════════════════════════════════════════════════════════════════
+document.getElementById('overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('overlay-user').addEventListener('click',function(e){if(e.target===this)closeUserModal();});
+document.getElementById('preview-overlay').addEventListener('click',function(e){if(e.target===this)closePreview();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeUserModal();closePreview();}});
+document.getElementById('pw-pass').addEventListener('keydown',e=>{if(e.key==='Enter')checkPassword();});
+document.getElementById('pw-new2').addEventListener('keydown',e=>{if(e.key==='Enter')doChangePassword();});
+applyPhoneMask(document.getElementById('f-phone'));
+
+(async function init(){
+  showLoading('Подключение к базе данных...');
+  await loadData();
+  const sid=sessionStorage.getItem('yurcm_sid');
+  if(sid){
+    const u=getUser(sid);
+    if(u&&!u.blocked){loginUser(u);return;}
+  }
+  hideLoading();
+})();
+</script>
+</body>
+</html>
