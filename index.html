@@ -652,20 +652,25 @@ async function fetchWithRetry(fn, retries=4, delayMs=3000){
 async function loadData(){
   showLoading('Подключение к базе данных...');
   let success=false;
-  for(let attempt=1;attempt<=4;attempt++){
+  const MAX_ATTEMPTS=6;
+  for(let attempt=1;attempt<=MAX_ATTEMPTS;attempt++){
     try{
-      showLoading(attempt===1?'Загрузка данных...':'База данных просыпается, ожидайте... ('+attempt+'/4)');
+      showLoading(attempt===1?'Загрузка данных...':'База данных просыпается, ожидайте... ('+attempt+'/'+MAX_ATTEMPTS+')');
+      console.log('[CRM] Попытка загрузки данных №'+attempt);
 
       // Load users first — самый важный запрос
+      const t0=Date.now();
       const {data:uData,error:uErr}=await sb.from('crm_users').select('*');
+      console.log('[CRM] crm_users загружен за '+(Date.now()-t0)+'мс, записей:', uData?.length||0);
       if(uErr) throw uErr;
 
       if(uData&&uData.length>0){
         usersDB={users:uData.map(r=>({
           id:r.id, login:r.login, name:r.name, pass:r.pass, role:r.role||'user',
-          blocked:r.blocked||false, mustChange:r.must_change!==false,
+          blocked:r.blocked===true, mustChange:r.must_change===true,
           avatar:r.avatar||'', theme:r.theme||'system'
         }))};
+        console.log('[CRM] Загружено пользователей из базы:', usersDB.users.length, usersDB.users.map(u=>u.login));
       } else {
         const defaults=[
           {id:'admin',login:'admin',name:'Администратор',pass:'admin2024',role:'admin',blocked:false,must_change:false,avatar:'',theme:'system'},
@@ -695,9 +700,11 @@ async function loadData(){
       break;
 
     } catch(e){
-      console.warn(`Попытка ${attempt} не удалась:`,e.message);
-      if(attempt<4){
-        await new Promise(r=>setTimeout(r,4000));
+      console.warn('[CRM] Попытка '+attempt+' не удалась:',e.message);
+      if(attempt<MAX_ATTEMPTS){
+        // Прогрессивная задержка: 3,5,7,10,15 секунд
+        const delays=[3000,5000,7000,10000,15000];
+        await new Promise(r=>setTimeout(r,delays[attempt-1]||15000));
       } else {
         // Показываем кнопку повторной попытки вместо alert
         hideLoading();
@@ -1408,22 +1415,27 @@ function checkPassword(){
   const pass=document.getElementById('pw-pass').value;
   const err=document.getElementById('pw-error');
 
+  console.log('[CRM] Попытка входа:', login, '| Пользователей в базе:', usersDB?.users?.length || 0);
+
   // Если пользователи ещё не загружены из базы
   if(!usersDB||!usersDB.users||usersDB.users.length===0){
-    err.textContent='';
-    err.innerHTML='Данные ещё загружаются. <a href="#" onclick="reloadAndLogin()" style="color:var(--accent);">Нажмите здесь</a> чтобы попробовать снова.';
+    err.style.color='#c0392b';
+    err.innerHTML='База ещё загружается. <a href="#" onclick="reloadAndLogin();return false;" style="color:var(--accent);text-decoration:underline;">Нажмите чтобы попробовать снова</a>';
     return;
   }
 
   const u=getUserByLogin(login);
+  console.log('[CRM] Найден пользователь:', u ? {login:u.login, mustChange:u.mustChange, blocked:u.blocked} : 'НЕТ');
+
   if(!u||u.pass!==pass){
     document.getElementById('pw-pass').classList.add('error');
+    err.style.color='#c0392b';
     err.textContent='Неверный логин или пароль';
     document.getElementById('pw-pass').value='';
     setTimeout(()=>document.getElementById('pw-pass').classList.remove('error'),400);
     return;
   }
-  if(u.blocked){err.textContent='Аккаунт заблокирован. Обратитесь к администратору.';return;}
+  if(u.blocked){err.style.color='#c0392b';err.textContent='Аккаунт заблокирован. Обратитесь к администратору.';return;}
   if(u.mustChange){pendingUser=u;document.getElementById('pw-card-login').style.display='none';document.getElementById('pw-card-change').style.display='block';return;}
   loginUser(u);
 }
