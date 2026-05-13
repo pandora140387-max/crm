@@ -1407,6 +1407,14 @@ function checkPassword(){
   const login=document.getElementById('pw-login').value.trim();
   const pass=document.getElementById('pw-pass').value;
   const err=document.getElementById('pw-error');
+
+  // Если пользователи ещё не загружены из базы
+  if(!usersDB||!usersDB.users||usersDB.users.length===0){
+    err.textContent='';
+    err.innerHTML='Данные ещё загружаются. <a href="#" onclick="reloadAndLogin()" style="color:var(--accent);">Нажмите здесь</a> чтобы попробовать снова.';
+    return;
+  }
+
   const u=getUserByLogin(login);
   if(!u||u.pass!==pass){
     document.getElementById('pw-pass').classList.add('error');
@@ -1418,6 +1426,19 @@ function checkPassword(){
   if(u.blocked){err.textContent='Аккаунт заблокирован. Обратитесь к администратору.';return;}
   if(u.mustChange){pendingUser=u;document.getElementById('pw-card-login').style.display='none';document.getElementById('pw-card-change').style.display='block';return;}
   loginUser(u);
+}
+
+async function reloadAndLogin(){
+  document.getElementById('pw-error').textContent='';
+  showLoading('Загрузка данных...');
+  await loadData();
+  hideLoading();
+  if(usersDB&&usersDB.users&&usersDB.users.length>0){
+    document.getElementById('pw-error').style.color='var(--success)';
+    document.getElementById('pw-error').textContent='Данные загружены. Введите логин и пароль.';
+  } else {
+    document.getElementById('pw-error').textContent='Не удалось загрузить данные. Попробуйте обновить страницу.';
+  }
 }
 function doChangePassword(){
   const n1=document.getElementById('pw-new1').value,n2=document.getElementById('pw-new2').value;
