@@ -632,47 +632,104 @@ function showLoading(msg='Загрузка...'){
 function hideLoading(){const el=document.getElementById('loading-overlay');if(el)el.remove();}
 
 // ── LOAD ALL DATA FROM SUPABASE ───────────────────────────────────────────────
-async function loadData(){
-  showLoading('Загрузка данных...');
-  try {
-    // Load clients
-    const {data:cData,error:cErr}=await sb.from('clients').select('*').order('date',{ascending:false});
-    if(cErr) throw cErr;
-    clients=(cData||[]).map(r=>({
-      id:r.id, date:r.date, name:r.name, phone:r.phone, email:r.email||'',
-      source:r.source||'', lawyerId:r.lawyer_id||'', status:r.status||'',
-      callbackDate:r.callback_date||'', comment:r.comment||''
-    }));
-
-    // Load profiles
-    const {data:pData,error:pErr}=await sb.from('profiles').select('*');
-    if(pErr) throw pErr;
-    profiles={};
-    (pData||[]).forEach(r=>{profiles[r.id]=r.data||{};});
-
-    // Load users
-    const {data:uData,error:uErr}=await sb.from('crm_users').select('*');
-    if(uErr) throw uErr;
-    if(uData&&uData.length>0){
-      usersDB={users:uData.map(r=>({
-        id:r.id, login:r.login, name:r.name, pass:r.pass, role:r.role||'user',
-        blocked:r.blocked||false, mustChange:r.must_change!==false,
-        avatar:r.avatar||'', theme:r.theme||'system'
-      }))};
-    } else {
-      // First run — create default users
-      const defaults=[
-        {id:'admin',login:'admin',name:'Администратор',pass:'admin2024',role:'admin',blocked:false,must_change:false,avatar:'',theme:'system'},
-        {id:'u1',login:'yurist1',name:'Юрист 1',pass:'yurist1',role:'user',blocked:false,must_change:true,avatar:'',theme:'system'},
-        {id:'u2',login:'yurist2',name:'Юрист 2',pass:'yurist2',role:'user',blocked:false,must_change:true,avatar:'',theme:'system'},
-      ];
-      await sb.from('crm_users').insert(defaults);
-      usersDB={users:defaults.map(r=>({id:r.id,login:r.login,name:r.name,pass:r.pass,role:r.role,blocked:r.blocked,mustChange:r.must_change,avatar:r.avatar,theme:r.theme}))};
+async function fetchWithRetry(fn, retries=4, delayMs=3000){
+  for(let i=0;i<retries;i++){
+    try{
+      const result=await fn();
+      return result;
+    } catch(e){
+      console.warn(`Попытка ${i+1} не удалась:`,e.message);
+      if(i<retries-1){
+        showLoading(`База данных просыпается... попытка ${i+2} из ${retries}`);
+        await new Promise(r=>setTimeout(r,delayMs));
+      } else {
+        throw e;
+      }
     }
-  } catch(e){
-    console.error('Ошибка загрузки:',e);
-    alert('Ошибка подключения к базе данных: '+e.message);
   }
+}
+
+async function loadData(){
+  showLoading('Подключение к базе данных...');
+  let success=false;
+  for(let attempt=1;attempt<=4;attempt++){
+    try{
+      showLoading(attempt===1?'Загрузка данных...':'База данных просыпается, ожидайте... ('+attempt+'/4)');
+
+      // Load users first — самый важный запрос
+      const {data:uData,error:uErr}=await sb.from('crm_users').select('*');
+      if(uErr) throw uErr;
+
+      if(uData&&uData.length>0){
+        usersDB={users:uData.map(r=>({
+          id:r.id, login:r.login, name:r.name, pass:r.pass, role:r.role||'user',
+          blocked:r.blocked||false, mustChange:r.must_change!==false,
+          avatar:r.avatar||'', theme:r.theme||'system'
+        }))};
+      } else {
+        const defaults=[
+          {id:'admin',login:'admin',name:'Администратор',pass:'admin2024',role:'admin',blocked:false,must_change:false,avatar:'',theme:'system'},
+          {id:'u1',login:'yurist1',name:'Юрист 1',pass:'yurist1',role:'user',blocked:false,must_change:true,avatar:'',theme:'system'},
+          {id:'u2',login:'yurist2',name:'Юрист 2',pass:'yurist2',role:'user',blocked:false,must_change:true,avatar:'',theme:'system'},
+        ];
+        await sb.from('crm_users').insert(defaults);
+        usersDB={users:defaults.map(r=>({id:r.id,login:r.login,name:r.name,pass:r.pass,role:r.role,blocked:r.blocked,mustChange:r.must_change,avatar:r.avatar,theme:r.theme}))};
+      }
+
+      // Load clients
+      const {data:cData,error:cErr}=await sb.from('clients').select('*').order('date',{ascending:false});
+      if(cErr) throw cErr;
+      clients=(cData||[]).map(r=>({
+        id:r.id, date:r.date, name:r.name, phone:r.phone, email:r.email||'',
+        source:r.source||'', lawyerId:r.lawyer_id||'', status:r.status||'',
+        callbackDate:r.callback_date||'', comment:r.comment||''
+      }));
+
+      // Load profiles
+      const {data:pData,error:pErr}=await sb.from('profiles').select('*');
+      if(pErr) throw pErr;
+      profiles={};
+      (pData||[]).forEach(r=>{profiles[r.id]=r.data||{};});
+
+      success=true;
+      break;
+
+    } catch(e){
+      console.warn(`Попытка ${attempt} не удалась:`,e.message);
+      if(attempt<4){
+        await new Promise(r=>setTimeout(r,4000));
+      } else {
+        // Показываем кнопку повторной попытки вместо alert
+        hideLoading();
+        showRetryScreen(e.message);
+        return;
+      }
+    }
+  }
+  hideLoading();
+}
+
+function showRetryScreen(errMsg){
+  let el=document.getElementById('loading-overlay');
+  if(!el){
+    el=document.createElement('div');
+    el.id='loading-overlay';
+    el.style.cssText='position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px;padding:2rem;text-align:center;';
+    document.body.appendChild(el);
+  }
+  el.innerHTML=`
+    <div style="width:48px;height:48px;border-radius:12px;background:#FCEBEB;display:flex;align-items:center;justify-content:center;font-size:24px;">⚠️</div>
+    <div style="font-size:16px;font-weight:600;color:var(--text);">Не удалось подключиться к базе данных</div>
+    <div style="font-size:13px;color:var(--text2);max-width:360px;">База данных просыпается после паузы. Это может занять до 1–2 минут. Нажмите «Попробовать снова».</div>
+    <div style="font-size:11px;color:var(--text3);max-width:360px;">${errMsg||''}</div>
+    <button onclick="retryLoad()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 28px;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;">Попробовать снова</button>
+  `;
+}
+
+async function retryLoad(){
+  await loadData();
+  const sid=sessionStorage.getItem('yurcm_sid');
+  if(sid){const u=getUser(sid);if(u&&!u.blocked){loginUser(u);return;}}
   hideLoading();
 }
 
